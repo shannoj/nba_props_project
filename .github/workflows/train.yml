@@ -1,0 +1,59 @@
+name: Train and report
+
+# Daily: retrain on everything through last night (ESPN box scores refresh
+# around 12:30 UTC). Mondays: also post the weekly experiment report as an issue.
+on:
+  schedule:
+    - cron: "30 13 * * *"
+  workflow_dispatch:
+    inputs:
+      report:
+        description: "Post the experiment report issue"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: experiment-data
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python model.py
+      - name: Commit model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add artifacts
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Model update: $(date -u +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi
+      - name: Post weekly report
+        if: github.event_name == 'schedule' || inputs.report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "1" ]; then
+            echo "Reports post on Mondays."; exit 0
+          fi
+          title=$(python report.py report.md | tail -n 1)
+          if [ ! -f report.md ]; then echo "Nothing to report yet."; exit 0; fi
+          for n in $(gh issue list --state open --search "experiment report in:title" --json number -q '.[].number'); do
+            gh issue close "$n" --comment "Superseded by the latest report."
+          done
+          gh issue create --title "$title" --body-file report.md
