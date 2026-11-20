@@ -1,13 +1,13 @@
 name: Log lines
 
-# Hourly through the NBA day. Each game is logged once, when it is within
-# 3 hours of tip-off (after most injury news), and its closing lines are
-# captured once within the hour before tip. The events list is free; each
+# Twice an hour through the NBA day (GitHub often skips scheduled runs, so
+# there are plenty). Each game is logged once, at the first run within 6 hours
+# of tip-off, and its closing lines are captured once within 90 minutes of tip. The events list is free; each
 # game costs one Odds API credit to log and one for the closing snapshot.
 on:
   schedule:
-    - cron: "15 15-23 * * *"   # 15:15-23:15 UTC (weekend matinees through early evening tips)
-    - cron: "15 0-3 * * *"     # 00:15-03:15 UTC (late tips)
+    - cron: "15,45 15-23 * * *"   # 15:15-23:45 UTC (weekend matinees through early evening tips)
+    - cron: "15,45 0-3 * * *"     # 00:15-03:45 UTC (late tips)
   workflow_dispatch:
 
 permissions:

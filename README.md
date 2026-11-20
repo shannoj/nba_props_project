@@ -1,7 +1,7 @@
 # NBA player points: does a model beat the sportsbooks?
 
 A paper-trading experiment, run entirely by GitHub Actions. A model projects
-each player's points; every sportsbook points line is logged a few hours before
+each player's points; every sportsbook points line is logged up to 6 hours before
 tip-off along with the model's probability, and a hypothetical $100 bet is
 placed whenever the model's side has at least +3% expected value. Nothing is
 edited after the fact, so the log is an honest out-of-sample record.
@@ -14,7 +14,7 @@ sample (300+ bets) in a few weeks.
 | Step | When | What |
 |---|---|---|
 | `model.py` | Daily 13:30 UTC | Retrain on ESPN box scores through last night (2021-22 season on). |
-| `autobet.py` | Hourly, 15:15-03:15 UTC | For games tipping off within 3 hours: pull every book's points lines, project each player, log the line and any paper bet. For logged games tipping off within the hour: snapshot the closing lines. |
+| `autobet.py` | Every 30 min, 15:15-03:45 UTC | For games tipping off within 6 hours: pull every book's points lines, project each player, log the line and any paper bet. For logged games tipping off within 90 minutes: snapshot the closing lines. |
 | `report.py` | Mondays | Post the season-to-date report as a GitHub issue. |
 
 **Model.** An average of XGBoost and ridge regression on the player's recent
@@ -32,6 +32,14 @@ an 8-point bench player's).
 - *Probability accuracy*: Brier score and log loss vs. the no-vig market probability.
 - *Closing line value*: whether the line moves toward the bets before tip. The fastest reliable sign of a real edge.
 - *Calibration*: when the model says 60%, does it hit 60%?
+
+## Dashboard
+
+`streamlit_app.py` is a phone-friendly dashboard: profit and record, tonight's
+bets, each night's results, profit over time, and the evaluation details. It
+reads the experiment log straight from GitHub, so it's never more than 10
+minutes behind. Deploy it free at [share.streamlit.io](https://share.streamlit.io)
+(repo `shannoj/nba_props_project`, main file `streamlit_app.py`).
 
 ## Setup
 

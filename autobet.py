@@ -1,11 +1,11 @@
 """Paper-trading experiment: does the model beat sportsbook NBA player points props?
 
-Runs hourly through the NBA day (GitHub Action). For each game tipping off in
+Runs twice an hour through the NBA day (GitHub Action). For each game tipping off in
 the next LOOKAHEAD_HOURS that hasn't been logged yet, it pulls every player's
 points line from The Odds API, projects that player, and records the line, the
 model's probability and a hypothetical STAKE bet whenever the better side's
-expected value is at least MIN_EV. Each game is logged once, a few hours before
-tip (after most injury news); nothing is edited afterwards, so the log is an
+expected value is at least MIN_EV. Each game is logged once, at the first run within
+LOOKAHEAD_HOURS of tip; nothing is edited afterwards, so the log is an
 honest out-of-sample record. Every line is logged, bet or not, so controls and
 other strategies can be judged on the same data.
 
@@ -33,8 +33,10 @@ import model as points_model
 API = "https://api.the-odds-api.com/v4/sports/basketball_nba"
 MARKET = "player_points"
 BOOKS = ["draftkings", "fanduel", "betmgm", "williamhill_us", "espnbet", "betrivers", "fanatics"]  # first = primary
-LOOKAHEAD_HOURS = 3
-CLOSE_WINDOW_MINUTES = 60
+# GitHub's scheduler often skips or delays runs, so the windows are wide enough that
+# a missed run or two still catches every game.
+LOOKAHEAD_HOURS = 6
+CLOSE_WINDOW_MINUTES = 90
 STAKE = 100.0
 MIN_EV = 0.03  # the pre-registered betting rule: bet only with >= +3% expected return
 KELLY_CAP = 3.0  # shadow Kelly strategy: no bet larger than about 3x the average stake
