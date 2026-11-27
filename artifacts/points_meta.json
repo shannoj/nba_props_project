@@ -33,7 +33,7 @@
     "objective": "reg:squarederror"
   },
   "n_trees": 314,
-  "trained_at": "2026-11-26T22:29:10+00:00",
+  "trained_at": "2026-11-27T22:12:08+00:00",
   "trained_through": "2026-11-25",
   "split": {
     "train": "2022-2025",
